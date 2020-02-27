@@ -133,6 +133,7 @@ class Engine(object):
         voice: String ID of the current voice
         rate: Integer speech rate in words per minute
         volume: Floating point volume of speech in the range [0.0, 1.0]
+        output_source: The current voice output device/speaker
 
         Numeric values outside the valid range supported by the driver are
         clipped.
@@ -153,6 +154,7 @@ class Engine(object):
         voice: String ID of the voice
         rate: Integer speech rate in words per minute
         volume: Floating point volume of speech in the range [0.0, 1.0]
+        output_source: The index of output speaker/device
 
         Numeric values outside the valid range supported by the driver are
         clipped.

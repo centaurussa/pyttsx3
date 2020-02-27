@@ -1,16 +1,9 @@
-import comtypes.client  # Importing comtypes.client will make the gen subpackage
-try:
-    from comtypes.gen import SpeechLib  # comtypes
-except ImportError:
-    # Generate the SpeechLib lib and any associated files
-    engine = comtypes.client.CreateObject("SAPI.SpVoice")
-    stream = comtypes.client.CreateObject("SAPI.SpFileStream")
-    from comtypes.gen import SpeechLib
 
+#import comtypes.client
+import win32com.client
 import pythoncom
 import time
 import math
-import os
 import weakref
 from ..voice import Voice
 from . import toUtf8, fromUtf8
@@ -32,12 +25,16 @@ def buildDriver(proxy):
 
 class SAPI5Driver(object):
     def __init__(self, proxy):
-        self._tts = comtypes.client.CreateObject('SAPI.SPVoice')
+        self._tts = win32com.client.Dispatch('SAPI.SPVoice')
+
+        #self._tts = comtypes.client.CreateObject('SAPI.SPVoice')
         # all events
         self._tts.EventInterests = 33790
-        self._event_sink = SAPI5DriverEventSink()
-        self._event_sink.setDriver(weakref.proxy(self))
-        self._advise = comtypes.client.GetEvents(self._tts, self._event_sink)
+        self._advise = win32com.client.WithEvents(self._tts,
+                                                  SAPI5DriverEventSink)
+        self._advise.setDriver(weakref.proxy(self))
+        #self._debug = comtypes.client.ShowEvents(self._tts)
+        #self._advise = comtypes.client.GetEvents(self._tts, self)
         self._proxy = proxy
         self._looping = False
         self._speaking = False
@@ -53,7 +50,7 @@ class SAPI5Driver(object):
         self._proxy.setBusy(True)
         self._proxy.notify('started-utterance')
         self._speaking = True
-        self._tts.Speak(fromUtf8(toUtf8(text)))
+        self._tts.Speak(fromUtf8(toUtf8(text)), 19)
 
     def stop(self):
         if not self._speaking:
@@ -63,15 +60,7 @@ class SAPI5Driver(object):
         self._tts.Speak('', 3)
 
     def save_to_file(self, text, filename):
-        cwd = os.getcwd()
-        stream = comtypes.client.CreateObject('SAPI.SPFileStream')
-        stream.Open(filename, SpeechLib.SSFMCreateForWrite)
-        temp_stream = self._tts.AudioOutputStream
-        self._tts.AudioOutputStream = stream
-        self._tts.Speak(fromUtf8(toUtf8(text)))
-        self._tts.AudioOutputStream = temp_stream
-        stream.close()
-        os.chdir(cwd)
+        raise NotImplementedError
 
     def _toVoice(self, attr):
         return Voice(attr.Id, attr.GetDescription())
@@ -92,6 +81,8 @@ class SAPI5Driver(object):
             return self._rateWpm
         elif name == 'volume':
             return self._tts.Volume / 100.0
+        elif name == "output_source":
+            return self._tts.AudioOutput
         else:
             raise KeyError('unknown property %s' % name)
 
@@ -114,6 +105,12 @@ class SAPI5Driver(object):
                 self._tts.Volume = int(round(value * 100, 2))
             except TypeError as e:
                 raise ValueError(str(e))
+        elif name == 'output_source':
+            try:
+                self._tts.AudioOutput = list(self._tts.GetAudioOutputs())[value]
+            except TypeError as e:
+                raise ValueError(str(e))
+
         else:
             raise KeyError('unknown property %s' % name)
 
@@ -144,11 +141,11 @@ class SAPI5DriverEventSink(object):
     def setDriver(self, driver):
         self._driver = driver
 
-    def _ISpeechVoiceEvents_StartStream(self, char, length):
+    def OnWord(self, stream, pos, char, length):
         self._driver._proxy.notify(
             'started-word', location=char, length=length)
 
-    def _ISpeechVoiceEvents_EndStream(self, stream, pos):
+    def OnEndStream(self, stream, pos):
         d = self._driver
         if d._speaking:
             d._proxy.notify('finished-utterance', completed=not d._stopping)
