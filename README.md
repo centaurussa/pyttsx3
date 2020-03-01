@@ -1,4 +1,6 @@
-# pyttsx3 (offline TTS or Text To Speech converter for Python 3)
+# New Feature: Windows users now can change the output source device
+
+### pyttsx3 (offline TTS or Text To Speech converter for Python 3)
 
 [![Downloads](https://pepy.tech/badge/pyttsx3)](https://pepy.tech/project/pyttsx3) ![Downloads](https://pepy.tech/badge/pyttsx3/week)  [![](https://img.shields.io/github/languages/code-size/nateshmbhat/pyttsx3.svg?style=plastic)](https://github.com/nateshmbhat/pyttsx3)  [![](https://img.shields.io/github/license/nateshmbhat/pyttsx3?style=plastic)](https://github.com/nateshmbhat/pyttsx3) [![](https://img.shields.io/pypi/v/pyttsx3.svg?style=plastic)](https://pypi.org/project/pyttsx3/) [![](https://img.shields.io/github/languages/top/nateshmbhat/pyttsx3.svg?style=plastic)](https://github.com/nateshmbhat/pyttsx3) [![](https://img.shields.io/badge/author-nateshmbhat-green.svg)](https://github.com/nateshmbhat)
 
@@ -30,7 +32,7 @@ import pyttsx3
 pyttsx3.speak("I will speak this text")
 ```
 
-	
+
 **Changing Voice , Rate and Volume :**
 
 ```python3
@@ -57,6 +59,12 @@ engine.say("Hello World!")
 engine.say('My current speaking rate is ' + str(rate))
 engine.runAndWait()
 engine.stop()
+
+"""OUTPUT_SOURCE"""
+######-This Feature currently is available for Windows users only-
+output_source = engine.getProperty('output_source ')   # to know which device is being used as an output
+engine.setProperty('output_source', 1)    # Setting device of index 1 as an output source (Default: 0)
+
 ```
 
 #### **Full documentation of the Library**
