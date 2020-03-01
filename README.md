@@ -33,7 +33,7 @@ pyttsx3.speak("I will speak this text")
 ```
 
 
-**Changing Voice , Rate and Volume :**
+**Changing Voice, Rate, Volume and Output source :**
 
 ```python3
 import pyttsx3
@@ -61,7 +61,7 @@ engine.runAndWait()
 engine.stop()
 
 """OUTPUT_SOURCE"""
-######-This Feature currently is available for Windows users only-
+######This Feature currently is available for Windows users only-
 output_source = engine.getProperty('output_source ')   # to know which device is being used as an output
 engine.setProperty('output_source', 1)    # Setting device of index 1 as an output source (Default: 0)
 
